@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta charset="UTF-8" />
+    <title>Type Ahead 👀</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="https://fav.farm/🔥" />
+  </head>
+  <body>
+    <form class="search-form">
+      <input type="text" class="search" placeholder="City or State" />
+      <ul class="suggestions">
+        <li>Filter for a city</li>
+        <li>or a state</li>
+      </ul>
+    </form>
+    <script>
+      // Declare a variable where the list of cities are located.
+      const ENDPOINT =
+        "https://gist.githubusercontent.com/Miserlou/c5cd8364bf9b2420bb29/raw/2bf258763cdddd704f8ffd3ea9a3e81d25e2c6f6/cities.json";
+
+      // Create an empty array.
+      const CITIES = [];
+      // Fetch() the data from the endpoint variable
+      fetch(ENDPOINT)
+        // Using blob method to convert the data into JSON format
+        .then((blob) => blob.json())
+        // Push the data into the CITIES array
+        .then((data) => CITIES.push(...data));
+      // Define the function findMatches.
+      // This function takes two parameters.
+      function findMatches(wordToMatch, cities) {
+        // Use filter method on the cities array
+        // Matches what was searched. And create a new array.
+        return cities.filter((place) => {
+          // here we need to figure out if the city or state
+          const REGEX = new RegExp(wordToMatch, "gi");
+          // Return the filtered array of matching cities
+          return place.city.match(REGEX) || place.state.match(REGEX);
+        });
+      }
+
+      // Quite simple, takes a number as a parameter.
+      function numberWithCommas(num) {
+        // Return the number but...
+        // Convert the number to a string.
+        return (
+          num
+            .toString()
+            // Then insert commas at the appropriate positions.
+            .replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        );
+      }
+      // console.log(numberWithCommas(1000000));
+      // This function is responsible for displaying the matched cities on the webpage.
+      function displayMatches() {
+        // Call the function findMatches() and store
+        // the new data in a variable.
+        const matchArray = findMatches(this.value, CITIES);
+        // Itinerate over all the cities in the object matchArray
+        const html = matchArray
+          .map((place) => {
+            // Take the matched value and transform into regular expressions.
+            const regex = new RegExp(this.value, "gi");
+            // Then replace them with a span tag with the class="span"
+            const cityName = place.city.replace(
+              regex,
+              `<span class="h1">${this.value}</span>`
+            );
+            const stateName = place.state.replace(
+              regex,
+              `<span class="h1">${this.value}</span>`
+            );
+            // Return a <li> within the name of the city and state.
+            return `
+            <li>
+              <span class="name">${cityName} - ${stateName}</span>
+              <span class="population">${numberWithCommas(
+                place.population
+              )}</span>
+            </li>
+          `;
+          })
+          .join("");
+        suggestions.innerHTML = html;
+      }
+
+      const searchInput = document.querySelector(".search");
+      const suggestions = document.querySelector(".suggestions");
+
+      searchInput.addEventListener("change", displayMatches);
+      searchInput.addEventListener("keydown", displayMatches);
+    </script>
+  </body>
+</html>
